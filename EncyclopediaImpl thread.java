@@ -19,19 +19,41 @@ public class EncyclopediaImpl extends UnicastRemoteObject implements Encyclopedi
         this.executor = Executors.newFixedThreadPool(5);
     }
 
+    // Remote method implementation for counting the number of letters
     @Override
     public int count() throws RemoteException {
         executor.submit(() -> {
+            // This is the task submitted to the executor
             int count = data.length();
             System.out.println("Count: " + count);
         });
+
+        // This part executes concurrently with the task submitted above
         return data.length();
     }
 
+    // Remote method implementation for finding repeated words
     @Override
-public String[] repeatedWords() throws RemoteException {
-    executor.submit(() -> {
-        // This is the task submitted to the executor
+    public String[] repeatedWords() throws RemoteException {
+        executor.submit(() -> {
+            // This is the task submitted to the executor
+            String[] words = data.split("\\s+");
+            Map<String, Integer> wordCounts = new HashMap<>();
+            for (String word : words) {
+                if (wordCounts.containsKey(word)) {
+                    wordCounts.put(word, wordCounts.get(word) + 1);
+                } else {
+                    wordCounts.put(word, 1);
+                }
+            }
+            String[] repeatedWords = wordCounts.entrySet().stream()
+                    .filter(entry -> entry.getValue() > 1)
+                    .map(Map.Entry::getKey)
+                    .toArray(String[]::new);
+            System.out.println("Repeated Words: " + Arrays.toString(repeatedWords));
+        });
+
+        // This part executes concurrently with the task submitted above
         String[] words = data.split("\\s+");
         Map<String, Integer> wordCounts = new HashMap<>();
         for (String word : words) {
@@ -41,56 +63,46 @@ public String[] repeatedWords() throws RemoteException {
                 wordCounts.put(word, 1);
             }
         }
-        String[] repeatedWords = wordCounts.entrySet().stream()
+        return wordCounts.entrySet().stream()
                 .filter(entry -> entry.getValue() > 1)
                 .map(Map.Entry::getKey)
                 .toArray(String[]::new);
-        System.out.println("Repeated Words: " + Arrays.toString(repeatedWords));
-    });
-
-    // This part executes concurrently with the task submitted above
-    String[] words = data.split("\\s+");
-    Map<String, Integer> wordCounts = new HashMap<>();
-    for (String word : words) {
-        if (wordCounts.containsKey(word)) {
-            wordCounts.put(word, wordCounts.get(word) + 1);
-        } else {
-            wordCounts.put(word, 1);
-        }
     }
-    return wordCounts.entrySet().stream()
-            .filter(entry -> entry.getValue() > 1)
-            .map(Map.Entry::getKey)
-            .toArray(String[]::new);
-}
 
-
+    // Remote method implementation for finding the longest word
     @Override
     public String longest() throws RemoteException {
         executor.submit(() -> {
+            // This is the task submitted to the executor
             String[] words = data.split("\\s+");
             String longestWord = Arrays.stream(words)
                     .max((a, b) -> a.length() - b.length())
                     .orElse("");
             System.out.println("Longest Word: " + longestWord);
         });
+
+        // This part executes concurrently with the task submitted above
         String[] words = data.split("\\s+");
         return Arrays.stream(words)
                 .max((a, b) -> a.length() - b.length())
                 .orElse("");
     }
 
+    // Remote method implementation for finding the shortest word
     @Override
     public String shortest() throws RemoteException {
         executor.submit(() -> {
+            // This is the task submitted to the executor
             String[] words = data.split("\\s+");
             String shortestWord = Arrays.stream(words).min((a, b) -> a.length() - b.length())
                     .orElse("");
             System.out.println("Shortest Word: " + shortestWord);
         });
+
+        // This part executes concurrently with the task submitted above
         String[] words = data.split("\\s+");
         return Arrays.stream(words)
-                .min((a, b) -> a.length() - b.length())
+           .min((a, b) -> a.length() - b.length())
                 .orElse("");
     }
 
